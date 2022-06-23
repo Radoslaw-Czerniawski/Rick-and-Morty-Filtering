@@ -2,7 +2,7 @@ import { Dispatch } from 'react';
 
 interface RaMResponse {
     info: RaMInfo;
-    results: RaMCharacter[];
+    results: RaMCharacterFromApi[];
 }
 
 interface RaMInfo {
@@ -12,12 +12,23 @@ interface RaMInfo {
     prev: string | null;
 }
 
-interface RaMCharacter {
+interface RaMCharacterFromApi {
     id: number;
     name: string;
     status: RaMStatus;
     species: RaMSpecies;
-    type: string;
+    image: string;
+    origin: Origin;
+    episode: string[];
+}
+
+type RaMCharacter = Omit<RaMCharacterFromApi, 'episode'> & {
+    episodes: string[];
+};
+
+interface Origin {
+    name: string;
+    url: string;
 }
 
 type RaMStatus = 'Alive' | 'Dead' | 'unknown';

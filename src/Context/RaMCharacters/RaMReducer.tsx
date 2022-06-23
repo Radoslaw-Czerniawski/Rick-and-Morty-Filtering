@@ -1,52 +1,62 @@
 import { Dispatch, useEffect, useReducer } from 'react';
 import { RaMCharacter } from '../../Types/RaMCharacters';
-import { batchFetchRaM } from './Utils/batchFetchRam';
+import {
+    Action,
+    Idle,
+    Options,
+    Reducer,
+    Result,
+    Url,
+} from '../../Types/RaMReducer';
+import { batchFetchRaM, spliceRandom } from './Utils/batchFetchRam';
 
 const initialState: Idle = {
     data: undefined,
-    filteredData: undefined,
     isLoading: false,
     error: false,
 };
 
-function reducer<T>(state: Result<T>, action: Action<T>): Result<T> {
-    if (action.type === 'start-loading') {
-        return {
-            data: undefined,
-            filteredData: undefined,
-            isLoading: true,
-            error: false,
-        };
-    }
-    if (action.type === 'success-loading') {
-        return {
-            data: action.data,
-            filteredData: action.filteredData,
-            isLoading: false,
-            error: false,
-        };
-    }
-    if (action.type === 'fail-loading') {
-        return {
-            data: undefined,
-            filteredData: undefined,
-            isLoading: false,
-            error: true,
-        };
-    }
+function reducer<T extends RaMCharacter[]>(
+    state: Result<T>,
+    action: Action<T>
+): Result<T> {
+    switch (action.type) {
+        case 'start-loading':
+            return {
+                data: undefined,
+                isLoading: true,
+                error: false,
+            };
 
-    if (action.type === 'filter') {
-        const newFilteredData = action.filterFn(action.filteredData);
+        case 'success-loading':
+            return {
+                data: action.data,
+                isLoading: false,
+                error: false,
+            };
 
-        return {
-            data: action.data,
-            filteredData: newFilteredData,
-            isLoading: false,
-            error: false,
-        };
+        case 'fail-loading':
+            return {
+                data: undefined,
+                isLoading: false,
+                error: true,
+            };
+        case 'change-status':
+            return {
+                ...state,
+                data: state.data?.map((item) =>
+                    item.id === action.payload.id
+                        ? {
+                              ...item,
+                              status: action.payload.status,
+                          }
+                        : item
+                ),
+            };
+
+        default:
+            return state;
     }
-
-    return state;
 }
 
 export const useBatchFetchAndReturnReducer = (
@@ -63,19 +73,35 @@ export const useBatchFetchAndReturnReducer = (
         const controller = new AbortController();
         const signal = controller.signal;
 
-        batchFetchRaM(url, [], signal)
+        batchFetchRaM(url, [], options, signal)
             .then((data) => {
                 if (data instanceof Error) {
                     throw new Error('Server response is not ok');
                 }
 
-                console.log(data);
-
                 return data;
             })
-            .then((data) =>
-                dispatch({ type: 'success-loading', data, filteredData: data })
-            )
+            .then((data): RaMCharacter[] => {
+                return data.map(
+                    ({ episode, image, id, name, origin, species, status }) => {
+                        const episodes =
+                            episode.length > 2
+                                ? [spliceRandom(episode), spliceRandom(episode)]
+                                : episode;
+
+                        return {
+                            episodes: episodes,
+                            image,
+                            id,
+                            name,
+                            origin,
+                            species,
+                            status,
+                        };
+                    }
+                );
+            })
+            .then((data) => dispatch({ type: 'success-loading', data }))
             .catch(() => dispatch({ type: 'fail-loading' }));
 
         return () => {

@@ -1,24 +1,33 @@
-import { RaMCharacter, RaMResponse } from '../../../Types/RaMCharacters';
+import { RaMCharacterFromApi, RaMResponse } from '../../../Types/RaMCharacters';
+import { Options, Url } from '../../../Types/RaMReducer';
 
 export const batchFetchRaM = async (
     url: Url,
-    charactersArr: RaMCharacter[] | undefined = undefined,
+    charactersArr: RaMCharacterFromApi[] | undefined = [],
+    options: Options,
     signal: AbortSignal
-): Promise<RaMCharacter[] | Error> => {
+): Promise<RaMCharacterFromApi[] | Error> => {
     try {
-        const req = await fetch(url, { signal });
+        const req = await fetch(url, { ...options, signal });
         const resp: RaMResponse = await req.json();
 
-        const newCharacters = charactersArr
-            ? [...charactersArr, ...resp.results]
-            : [...resp.results];
+        const newCharacters = [...charactersArr, ...resp.results];
 
         if (resp.info.next) {
-            return batchFetchRaM(resp.info.next, newCharacters, signal);
+            return batchFetchRaM(
+                resp.info.next,
+                newCharacters,
+                options,
+                signal
+            );
         }
 
         return newCharacters;
     } catch (err) {
         throw new Error();
     }
+};
+
+export const spliceRandom = <T = unknown,>(arr: T[]) => {
+    return arr.splice(Math.floor(Math.random() * arr.length))[0];
 };

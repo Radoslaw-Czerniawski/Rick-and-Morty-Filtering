@@ -1,45 +1,45 @@
+import { RaMCharacter, RaMStatus } from './RaMCharacters';
+
 type FetchParams = Parameters<typeof window.fetch>;
 type Url = FetchParams[0];
 type Options = FetchParams[1];
 
 interface Idle {
     data: undefined;
-    filteredData: undefined;
     isLoading: false;
     error: false;
 }
 
 interface Success<T> {
     data: T;
-    filteredData: T;
     isLoading: false;
     error: false;
 }
 
 interface Pending {
     data: undefined;
-    filteredData: undefined;
     isLoading: true;
     error: false;
 }
 
 interface Fail {
     data: undefined;
-    filteredData: undefined;
     isLoading: false;
     error: true;
 }
 
 interface Filtered<T> {
     data: T;
-    filteredData: T;
     isLoading: false;
     error: false;
 }
 
-type Result<T> = Idle | Success<T> | Pending | Fail | Filtered<T>;
+type Result<T extends RaMCharacter[]> = Idle | Success<T> | Pending | Fail;
 
-type Reducer<T> = (state: Result<T>, action: Action<T>) => Result<T>;
+type Reducer<T extends RaMCharacter[]> = (
+    state: Result<T>,
+    action: Action<T>
+) => Result<T>;
 
 interface StartLoading {
     type: 'start-loading';
@@ -47,22 +47,21 @@ interface StartLoading {
 interface SuccessLoading<T> {
     type: 'success-loading';
     data: T;
-    filteredData: T;
-}
-type FilterFn<T> = (el: T) => T;
-interface Filter<T, FilterFn> {
-    type: 'filter';
-    data: T;
-    filteredData: T;
-    filterFn: FilterFn;
 }
 
 interface FailLoading {
     type: 'fail-loading';
 }
 
-type Action<T> =
-    | StartLoading
-    | SuccessLoading<T>
-    | FailLoading
-    | Filter<T, FilterFn<T>>;
+interface ChangeStatus {
+    type: 'change-status';
+    // payload: Pick<RaMCharacter, 'id' | 'status'>;
+    payload: Payload;
+}
+
+interface Payload {
+    id: number;
+    status: RaMStatus;
+}
+
+type Action<T> = StartLoading | SuccessLoading<T> | FailLoading | ChangeStatus;

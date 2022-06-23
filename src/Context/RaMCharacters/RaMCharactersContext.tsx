@@ -2,22 +2,26 @@ import { createContext, ReactNode, useContext } from 'react';
 import { ContextValue } from '../../Types/RaMCharactersContext';
 import { useBatchFetchAndReturnReducer } from './RaMReducer';
 
-const Context = createContext<ContextValue | null>(null);
+const RaMCharactersContext = createContext<ContextValue | null>(null);
 
 interface Props {
     children: ReactNode;
 }
 
 export const RaMCharactersProvider = ({ children }: Props) => {
-    const value = useBatchFetchAndReturnReducer(
-        'https://rickandmortyapi.com/api/character'
-    );
+    const value = useBatchFetchAndReturnReducer({
+        url: 'https://rickandmortyapi.com/api/character',
+    });
 
-    return <Context.Provider value={value}>{children}</Context.Provider>;
+    return (
+        <RaMCharactersContext.Provider value={value}>
+            {children}
+        </RaMCharactersContext.Provider>
+    );
 };
 
 export const useRaMCharacters = () => {
-    const value = useContext(Context);
+    const value = useContext(RaMCharactersContext);
 
     if (value === null) {
         throw new Error('Missing RaMCharactersProvider');
