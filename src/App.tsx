@@ -7,40 +7,60 @@ import {
     RaMCharacterFromApi,
     RaMResponse,
 } from './Types/RaMCharacters';
-import { getCharactersByPage, spliceRandom } from './Utils/Utils';
+import { /* getCharactersByPage */ spliceRandom } from './Utils/Utils';
 
 const predicates = {
     isAlive: (character: RaMCharacter) => character.status === 'Alive',
+    isDead: (character: RaMCharacter) => character.status === 'Dead',
 };
 
 const pageSize = 5;
 
 const url = 'https://rickandmortyapi.com/api/character';
 
-const API_RESPONSE_SIZE = 20;
+// const API_RESPONSE_SIZE = 20;
+
+export const batchFetchRaM = async (
+    url: string,
+    charactersArr: RaMCharacterFromApi[] | undefined = []
+): Promise<RaMCharacterFromApi[] | Error> => {
+    try {
+        const req = await fetch(url);
+        const resp: RaMResponse = await req.json();
+
+        const newCharacters = [...charactersArr, ...resp.results];
+
+        if (resp.info.next) {
+            return batchFetchRaM(resp.info.next, newCharacters);
+        }
+
+        return newCharacters;
+    } catch (err) {
+        throw new Error();
+    }
+};
 
 export const App = () => {
     const [pageNumber, setPageNumber] = useState(1);
-    const [selectedCharacters, setSelectedCharacters] = useState<number[]>([]);
+
     // TODO: reset filters
     const [filters] = useState<(keyof typeof predicates)[]>([]);
+    const [selectedCharacters, setSelectedCharacters] = useState<number[]>([]);
 
-    const apiPageNumber = useMemo(
-        () => Math.floor(((pageNumber - 1) * pageSize) / API_RESPONSE_SIZE) + 1,
-        [pageNumber]
-    );
+    console.log(selectedCharacters);
 
-    const { data } = useQuery(
-        ['characters', apiPageNumber],
-        () => getCharactersByPage(url, apiPageNumber),
-        {
-            select(data: RaMResponse): RaMCharacterFromApi[] {
-                return data.results;
-            },
-        }
-    );
+    // const apiPageNumber = useMemo(
+    //     () => Math.floor(((pageNumber - 1) * pageSize) / API_RESPONSE_SIZE) + 1,
+    //     [pageNumber]
+    // );
+
+    const { data } = useQuery(['characters'], () => batchFetchRaM(url));
 
     const transformedCharacters = useMemo(() => {
+        if (data instanceof Error) {
+            return;
+        }
+
         return data?.map(
             ({ episode, image, id, name, origin, species, status }) => {
                 const episodesFromApi = [...episode];
@@ -66,10 +86,7 @@ export const App = () => {
         );
     }, [data]);
 
-    const startIndex = useMemo(
-        () => (pageSize * (pageNumber - 1)) % API_RESPONSE_SIZE,
-        [pageNumber]
-    );
+    const startIndex = useMemo(() => pageSize * (pageNumber - 1), [pageNumber]);
 
     //TODO: make pagination based on API page and UI page
     const characters = useMemo(() => {
@@ -78,7 +95,7 @@ export const App = () => {
                 filters.every((filterName) => predicates[filterName](item))
             )
             .slice(startIndex, startIndex + pageSize);
-    }, [filters, data, pageNumber]);
+    }, [transformedCharacters, filters, pageNumber]);
 
     const selectCharacter = useCallback((id: number, isChecked: boolean) => {
         setSelectedCharacters((prevState) => {
