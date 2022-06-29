@@ -1,0 +1,18 @@
+{
+    "files": {
+        "main.css": "/Rick-and-Morty-Filtering/static/css/main.e63c23c6.css",
+        "main.js": "/Rick-and-Morty-Filtering/static/js/main.3860c718.js",
+        "static/media/unknown.svg": "/Rick-and-Morty-Filtering/static/media/unknown.0f04f8183aaab2675336c3f68f0c1eb3.svg",
+        "static/media/death.svg": "/Rick-and-Morty-Filtering/static/media/death.8fab701da8c08845147fa712c20a8b83.svg",
+        "index.html": "/Rick-and-Morty-Filtering/index.html",
+        "static/media/search.svg": "/Rick-and-Morty-Filtering/static/media/search.31b187df0038c9786941512ff6923a3f.svg",
+        "static/media/alive.svg": "/Rick-and-Morty-Filtering/static/media/alive.8c0676c3887a1f44164157b3b72a5a08.svg",
+        "static/media/Vector.svg": "/Rick-and-Morty-Filtering/static/media/Vector.950f752dc7a31bfe612066d440b9e2d8.svg",
+        "main.e63c23c6.css.map": "/Rick-and-Morty-Filtering/static/css/main.e63c23c6.css.map",
+        "main.3860c718.js.map": "/Rick-and-Morty-Filtering/static/js/main.3860c718.js.map"
+    },
+    "entrypoints": [
+        "static/css/main.e63c23c6.css",
+        "static/js/main.3860c718.js"
+    ]
+}

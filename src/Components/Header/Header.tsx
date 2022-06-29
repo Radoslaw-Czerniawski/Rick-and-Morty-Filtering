@@ -134,7 +134,7 @@ const StyledInput = styled.input`
     font-family: inherit;
     font-size: inherit;
     cursor: inherit;
-    line-height: inherit;
+
     padding-left: 12px;
 `;
 
