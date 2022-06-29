@@ -1,95 +1,141 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
+
+import * as S from './StylesApp';
 import './App.css';
+import { Episode } from './Components/Episode/Episode';
+import { Pagination } from './Components/Pagination/Pagination';
 
-import './App.css';
-import { useRaMCharacters } from './Context/RaMCharacters/RaMCharactersContext';
-import { RaMCharacter } from './Types/RaMCharacters';
+import vector from './assets/Vector.svg';
 
-// const filterer = (arr: RaMCharacter[]) => {
-//     const filteredArr = arr.filter((el) => el.species === 'Human');
-//     return filteredArr;
-// };
-
-const predicates = {
-    isAlive: (character: RaMCharacter) => character.status === 'Alive',
-};
-
-const pageSize = 5;
+import { Origin } from './Components/Origin/Origin';
+import { StatusIcon } from './Components/StatusIcon/StatusIcon';
+import { Header } from './Components/Header/Header';
+import { useCharacters } from './Hooks/useCharacters';
+import { CharacterCheckbox } from './Components/CharacterCheckbox/CharacterCheckbox';
 
 export const App = () => {
-    const [filters] = useState<(keyof typeof predicates)[]>(['isAlive']);
-    const [pageIndex /* setPageIndex */] = useState(0);
-    const [{ data }, dispatch] = useRaMCharacters();
+    const [pageNumber, setPageNumber] = useState(0);
 
-    dispatch({ type: 'change-status', payload: { id: 1, status: 'Dead' } });
-    const startIndex = useMemo(() => pageSize * pageIndex, [pageIndex]);
-
-    const characters = useMemo(() => {
-        return data
-            ?.filter((item) =>
-                filters.every((filterName) => predicates[filterName](item))
-            )
-            .slice(startIndex, startIndex + pageSize);
-    }, [data, filters]);
-
-    const [characterUpdates, setCharacterUpdates] = useState<
-        Partial<RaMCharacter>[]
-    >([]);
-
-    const updateCharacter = (id: number, status: RaMCharacter['status']) => {
-        setCharacterUpdates((updates) => updates.map);
-    };
-
-    // const handleClick = () => {
-    //     // if (!data || !filteredData) {
-    //     //     return;
-    //     // }
-    //     // dispatch({
-    //     //     type: 'filter',
-    //     //     filterFn: filterer,
-    //     //     data,
-    //     //     filteredData,
-    //     // });
-    // };
-
-    console.log(characters);
+    const { characters, isLoading, info, filtersApi } =
+        useCharacters(pageNumber);
 
     return (
-        <div>
-            <table>
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>Name</th>
-                        <th>Avatar</th>
-                        <th>Origin</th>
-                        <th>Episodes</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {characters?.map((el) => {
-                        return (
-                            <tr key={el.id}>
-                                <td>{el.name}</td>
-                                <td>
-                                    <img
-                                        src={el.image}
-                                        alt={'Avatar of ' + el.name}
-                                    />
-                                </td>
-                                <td>{el.origin.name}</td>
-                                <td>
-                                    {el.episodes.slice(0, 2).map((episode) => (
-                                        <span key={episode}>{episode}</span>
-                                    ))}
-                                </td>
-                                <td>{el.status}</td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
+        <S.AppWrapper>
+            <Header filtersApi={filtersApi} />
+            {!isLoading && (
+                <S.Table>
+                    <S.Head>
+                        <S.HeadRow>
+                            <S.HeadData>
+                                <S.Input
+                                    type="checkbox"
+                                    // onChange={handleCheckboxChange}
+                                />
+                                <S.HeadNameWrapper>
+                                    <S.SpanName>Name</S.SpanName>
+                                    <S.ArrowWrapper>
+                                        <S.TopArrow src={vector} alt="arrow" />
+                                        <S.BottomArrow
+                                            src={vector}
+                                            alt="arrow"
+                                        />
+                                    </S.ArrowWrapper>
+                                </S.HeadNameWrapper>
+                            </S.HeadData>
+
+                            <S.HeadData>
+                                <S.SpanTitle>Avatar</S.SpanTitle>
+                                <S.ArrowWrapper>
+                                    <S.TopArrow src={vector} alt="arrow" />
+                                    <S.BottomArrow src={vector} alt="arrow" />
+                                </S.ArrowWrapper>
+                            </S.HeadData>
+                            <S.HeadData>
+                                <S.SpanTitle>Origin</S.SpanTitle>
+                                <S.ArrowWrapper>
+                                    <S.TopArrow src={vector} alt="arrow" />
+                                    <S.BottomArrow src={vector} alt="arrow" />
+                                </S.ArrowWrapper>
+                            </S.HeadData>
+                            <S.HeadData>
+                                <S.SpanTitle>Episodes</S.SpanTitle>
+                                <S.ArrowWrapper>
+                                    <S.TopArrow src={vector} alt="arrow" />
+                                    <S.BottomArrow src={vector} alt="arrow" />
+                                </S.ArrowWrapper>
+                            </S.HeadData>
+                            <S.HeadData>
+                                <S.SpanTitle>Status</S.SpanTitle>
+                                <S.ArrowWrapper>
+                                    <S.TopArrow src={vector} alt="arrow" />
+                                    <S.BottomArrow src={vector} alt="arrow" />
+                                </S.ArrowWrapper>
+                            </S.HeadData>
+                        </S.HeadRow>
+                    </S.Head>
+                    <tbody>
+                        {characters?.map((el) => {
+                            return (
+                                <S.BodyRow status={el.status} key={el.id}>
+                                    <S.BodyData>
+                                        <CharacterCheckbox
+                                            characterId={el.id}
+                                        />
+                                        <S.BodyNameWrapper>
+                                            <S.SpanBodyName status={el.status}>
+                                                {el.name}
+                                            </S.SpanBodyName>
+                                            <S.SpanSpecies status={el.status}>
+                                                {el.species}
+                                            </S.SpanSpecies>
+                                        </S.BodyNameWrapper>
+                                    </S.BodyData>
+                                    <S.BodyData>
+                                        <S.Avatar
+                                            src={el.image}
+                                            alt={'Avatar of ' + el.name}
+                                            width={50}
+                                        />
+                                    </S.BodyData>
+                                    <S.BodyData>
+                                        <Origin
+                                            originUrl={el.origin.url}
+                                            originName={el.origin.name}
+                                        />
+                                    </S.BodyData>
+                                    <S.BodyData>
+                                        <S.EpisodeWrapper>
+                                            {el.episodes.map((episode) => (
+                                                <Episode
+                                                    status={el.status}
+                                                    key={episode}
+                                                    episodeUrl={episode}
+                                                />
+                                            ))}
+                                        </S.EpisodeWrapper>
+                                    </S.BodyData>
+                                    <S.BodyData>
+                                        <S.StatusWrapper>
+                                            <StatusIcon status={el.status} />
+                                            <S.SpanStatus status={el.status}>
+                                                {el.status}
+                                            </S.SpanStatus>
+                                        </S.StatusWrapper>
+                                    </S.BodyData>
+                                </S.BodyRow>
+                            );
+                        })}
+                    </tbody>
+                </S.Table>
+            )}
+
+            {info && (
+                <Pagination
+                    setPageNumber={setPageNumber}
+                    pageNumber={pageNumber}
+                    info={info}
+                />
+            )}
+        </S.AppWrapper>
     );
 };
